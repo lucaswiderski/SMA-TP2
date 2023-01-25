@@ -3,11 +3,15 @@ from pygame.math import Vector2
 import core
 from agent import Agent
 from body import Body
-import paramVivarium
 from item import Item
+import json
 
+def load(path):
+    f=open(path)
+    return json.load(f)
 def setup():
     print("Setup START---------")
+    param=load('paramVivarium.json')
     core.fps = 30
     core.WINDOW_SIZE = [400, 400]
 
@@ -16,23 +20,23 @@ def setup():
 
     total=0
 
-    for i in range(0,5):
-        core.memory('agents').append(Agent(i,0, Body(0,i)))
+    for i in range(0,param['SuperPredateur']['nb']):
+        core.memory('agents').append(Agent(param, i,0, Body(param,0,i,random.randint(0,100),random.randint(0,100),random.randint(0,100), random.randint(0,100), random.randint(0,100))))
         total+=1
 
-    for i in range(0,paramVivarium.paramCarn["nbCarn"]):
-        core.memory('agents').append(Agent(total+i,1, Body(1,total+i)))
+    for i in range(0,param['Carnivore']['nb']):
+        core.memory('agents').append(Agent(param, total+i,1, Body(param, 1,total+i,random.randint(0,100),random.randint(0,100),random.randint(0,100), random.randint(0,100), random.randint(0,100))))
         total+=1
 
-    for i in range(0,paramVivarium.paramHerb["nbHerb"]):
-        core.memory('agents').append(Agent(total+i,2, Body(2, total+i)))
+    for i in range(0,param['Herbivore']['nb']):
+        core.memory('agents').append(Agent(param, total+i,2, Body(param, 2, total+i,random.randint(0,100),random.randint(0,100),random.randint(0,100), random.randint(0,100), random.randint(0,100))))
         total+=1
 
-    for i in range(0,paramVivarium.paramDeco["nbDeco"]):
-        core.memory('agents').append(Agent(total+i,3, Body(3, total+i)))
+    for i in range(0,param['Decompositeur']['nb']):
+        core.memory('agents').append(Agent(param, total+i,3, Body(param, 3, total+i,random.randint(0,100),random.randint(0,100),random.randint(0,100), random.randint(0,100), random.randint(0,100))))
         total+=1
 
-    for i in range(0,15):
+    for i in range(0,param['nbPlantes']):
         core.memory('items').append(Item())
 
     print("Setup END-----------")
@@ -108,5 +112,18 @@ def run():
     print("Herbivor : " + str(int(((herb / totalpop) * 100)))+"%")
     print("Decoposeur : " + str(int(((deco / totalpop) * 100)))+"%")
     print("Vegetaux : " + str(int(((totalpop-super-carn-herb-deco)*100)/totalpop))+"%")
+    print("###")
+
+    minScore=0
+    typeAgent=""
+    for a in core.memory('agents'):
+        if(a.body.etat!=2):
+            temp=a.score()
+            if(temp > minScore):
+                meilleurAgent=a
+                minScore=a.score()
+                typeAgent=a.body.typeAgent
+    print("le meilleur agent est de type : "+typeAgent+" et son id est "+str(meilleurAgent.uuid))
+    print("###################################################################################")
 
 core.main(setup, run)
